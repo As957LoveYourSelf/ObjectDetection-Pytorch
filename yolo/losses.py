@@ -5,8 +5,15 @@ import numpy as np
 import torch
 import torchvision
 
-def iou_box():
-    pass
+def iou_box(real_box, other_boxes):
+    """
+    accept center point and width, height
+    :param real_box: [x, y, w, h] shape: [1, 4]
+    :param other_boxes: [[],[],...] shape: [n, 4]
+    :return:
+    """
+
+
 
 def giou_box():
     pass
