@@ -37,10 +37,10 @@ class SPPFModule(nn.Module):
 
 
 class DarknetBottleneck(nn.Module):
-    def __init__(self, input_channel, output_channel, add=False):
+    def __init__(self, input_channel: int, output_channel: int, add: bool):
         super().__init__()
-        self.cbs1 = CBSModule(output_channel, 0.5 * output_channel, kernel_size=3, stride=1, padding=1)
-        self.cbs2 = CBSModule(0.5 * output_channel, output_channel, 3, 1, 1)
+        self.cbs1 = CBSModule(input_channel, output_channel, kernel_size=3, stride=1, padding=1)
+        self.cbs2 = CBSModule(output_channel, output_channel, 3, 1, 1)
         self.add = add
 
     def forward(self, x):
@@ -60,12 +60,12 @@ class C2fModule(nn.Module):
         self.cbs1 = CBSModule(input_channel, output_channel, 1, 1, 0)
         self.dbns = []
         for i in range(db_n):
-            self.dbns.append(DarknetBottleneck(output_channel, output_channel*0.5))
-        self.cbs2 = CBSModule(0.5*(db_n+2)*output_channel, output_channel, 1, 1, 0)
+            self.dbns.append(DarknetBottleneck(output_channel, output_channel * 0.5, False))
+        self.cbs2 = CBSModule(0.5 * (db_n + 2) * output_channel, output_channel, 1, 1, 0)
 
     def forward(self, x):
         x = self.cbs1(x)
-        outputs = torch.split(x, 0.5*self.oc, dim=2)
+        outputs = torch.split(x, 0.5 * self.oc, dim=2)
         assert len(outputs) == 2
         for dbn in self.dbns:
             x = dbn(x)
@@ -74,38 +74,34 @@ class C2fModule(nn.Module):
         return output
 
 
+class C3Module(nn.Module):
+    def __init__(self, input_channel, output_channel, add):
+        super().__init__()
+        self.cbs1 = CBSModule(input_channel, 0.5 * output_channel, 1, 1, 0)
+        self.cbs2 = CBSModule(input_channel, 0.5 * output_channel, 1, 1, 0)
+        self.dbn = DarknetBottleneck(0.5*output_channel, output_channel, add)
+        self.cbs3 = CBSModule(input_channel, output_channel, 1, 1, 0)
+
+    def forward(self, x):
+        x1 = self.cbs1(x)
+        x2 = self.dbn(self.cbs2(x))
+        out = self.cbs3(torch.concat([x1, x2]))
+        return out
+
+
 class DecoupledHead(nn.Module):
     def __init__(self, input_channel, output_channel, reg_max=16):
         super().__init__()
         # box loss part
         self.cbs_box1 = CBSModule(input_channel, output_channel)
         self.cbs_box2 = CBSModule(output_channel, output_channel)
-        self.conv_box = nn.Conv2d(output_channel, 4*reg_max, 1, 1, 0)
+        self.conv_box = nn.Conv2d(output_channel, 4 * reg_max, 1, 1, 0)
         # === box loss ===
         # cls loss part
         self.cbs_cls1 = CBSModule(input_channel, output_channel)
         self.cbs_cls2 = CBSModule(output_channel, output_channel)
-        self.conv_cls = nn.Conv2d(output_channel, 4*reg_max, 1, 1, 0)
+        self.conv_cls = nn.Conv2d(output_channel, 4 * reg_max, 1, 1, 0)
         # === cls loss ===
 
     def forward(self):
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
