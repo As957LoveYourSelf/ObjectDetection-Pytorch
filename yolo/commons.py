@@ -53,7 +53,7 @@ class DarknetBottleneck(nn.Module):
         return out
 
 
-class CSPLayerModule(nn.Module):
+class C2fModule(nn.Module):
     def __init__(self, input_channel, output_channel, db_n):
         super().__init__()
         self.oc = output_channel
