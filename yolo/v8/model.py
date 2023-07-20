@@ -10,7 +10,7 @@ model_params = {
 }
 
 
-class YOLOV8(nn.Module):
+class YoloV8(nn.Module):
     def __init__(self, input_image, model_type):
         super().__init__()
         depth_multiple, width_multiple, ratio = model_params[model_type]

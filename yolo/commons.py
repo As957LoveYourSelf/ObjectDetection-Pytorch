@@ -90,7 +90,7 @@ class C3Module(nn.Module):
 
 
 class DecoupledHead(nn.Module):
-    def __init__(self, input_channel, output_channel, reg_max=16):
+    def __init__(self, input_channel, output_channel, num_class, reg_max=16):
         super().__init__()
         # box loss part
         self.cbs_box1 = CBSModule(input_channel, output_channel)
@@ -100,7 +100,7 @@ class DecoupledHead(nn.Module):
         # cls loss part
         self.cbs_cls1 = CBSModule(input_channel, output_channel)
         self.cbs_cls2 = CBSModule(output_channel, output_channel)
-        self.conv_cls = nn.Conv2d(output_channel, 4 * reg_max, 1, 1, 0)
+        self.conv_cls = nn.Conv2d(output_channel, num_class, 1, 1, 0)
         # === cls loss ===
 
     def forward(self):
