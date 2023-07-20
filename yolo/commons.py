@@ -54,13 +54,13 @@ class DarknetBottleneck(nn.Module):
 
 
 class C2fModule(nn.Module):
-    def __init__(self, input_channel, output_channel, db_n):
+    def __init__(self, input_channel, output_channel, db_n, add):
         super().__init__()
         self.oc = output_channel
         self.cbs1 = CBSModule(input_channel, output_channel, 1, 1, 0)
         self.dbns = []
         for i in range(db_n):
-            self.dbns.append(DarknetBottleneck(output_channel, output_channel * 0.5, False))
+            self.dbns.append(DarknetBottleneck(output_channel, output_channel * 0.5, add))
         self.cbs2 = CBSModule(0.5 * (db_n + 2) * output_channel, output_channel, 1, 1, 0)
 
     def forward(self, x):
@@ -89,8 +89,8 @@ class C3Module(nn.Module):
         return out
 
 
-class DecoupledHead(nn.Module):
-    def __init__(self, input_channel, output_channel, num_class, reg_max=16):
+class V8DecoupledHead(nn.Module):
+    def __init__(self, input_channel, output_channel, num_class, reg_max):
         super().__init__()
         # box loss part
         self.cbs_box1 = CBSModule(input_channel, output_channel)
